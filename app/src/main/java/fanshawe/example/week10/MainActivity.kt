@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.telephony.SmsManager
 import android.telephony.SubscriptionManager
+import android.view.Menu
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
@@ -64,6 +65,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.top_menu, menu)
+        return true
+    }
 
     private fun changeFragment(fragment: Fragment){
         val fragmentManager = supportFragmentManager
