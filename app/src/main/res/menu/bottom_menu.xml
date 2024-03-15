@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="Send"
+        android:id="@+id/send"
+        android:icon="@drawable/baseline_comment_24"/>
+    <item
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="Receive"
+        android:id="@+id/receive"
+        android:icon="@drawable/baseline_attach_email_24"/>
+    <item
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="Help"
+        android:id="@+id/info"
+        android:icon="@drawable/baseline_help_24"/>
+</menu>
