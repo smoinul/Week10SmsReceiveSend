@@ -2,6 +2,8 @@ package fanshawe.example.week10
 
 import android.Manifest
 import android.app.Activity
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -34,12 +36,15 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         // Check if the SEND_SMS permission is already available.
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED ||
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) {
             // If not, request permission from the user.
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.SEND_SMS, Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS), SEND_SMS_PERMISSION_REQUEST_CODE)
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS, Manifest.permission.SEND_SMS, Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS), SEND_SMS_PERMISSION_REQUEST_CODE)
         }
+
+        createNotificationChannel()
 
 
         // Initialize the BroadcastReceiver inside your function or class scope
@@ -125,6 +130,20 @@ class MainActivity : AppCompatActivity() {
         unregisterReceiver(smsSentReceiver)
     }
 
+    private fun createNotificationChannel() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            val name: CharSequence = "MyAlarm"
+            val description = "From MyAlarm App"
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel("MySMSReceiver", name, importance)
+            channel.description = description
+            val notificationManager = getSystemService(
+                NotificationManager::class.java
+            )
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == SEND_SMS_PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -146,6 +165,24 @@ class MainActivity : AppCompatActivity() {
                 val prefsEditor = getSharedPreferences("mySettings", Context.MODE_PRIVATE).edit()
                 prefsEditor.putString("textToMatch", stringToMatchSMS.text.toString())
                 prefsEditor.apply()
+                Toast.makeText(this, "Will look for \"${stringToMatchSMS.text.toString()}\" in the incoming SMS ", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun onClickOpenSMS(view: View) {
+        val fragment = supportFragmentManager.findFragmentById(R.id.fragmentContainerView) as InfoFragment
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
+            fragment.view?.let { fragmentView ->
+                val phoneNumber = fragmentView.findViewById<EditText>(R.id.editTextPhone)
+                val myMessage = fragmentView.findViewById<EditText>(R.id.editTextMessageSMS)
+                val intent = Intent(Intent.ACTION_SENDTO).apply {
+                    data = Uri.parse("smsto:")  // This ensures only SMS apps respond
+                    putExtra("address", phoneNumber.text.toString())
+                    putExtra("sms_body", myMessage.text.toString())
+                }
+                startActivity(Intent.createChooser(intent, "SMS"))
             }
         }
     }
